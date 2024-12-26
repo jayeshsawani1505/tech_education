@@ -212,13 +212,13 @@ const addStudentAndUser = async (studentData) => {
             ProfilePicture: studentData.StudentImage
         });
 
-        //Step 3: send mail
-        await storeEmail(
-            studentData.Name + studentData.Surname, // userName
-            studentData.Email, // email
-            studentData.Password, // password
-            results // results object
-        );
+          // //Step 3: send mail
+        // await storeEmail(
+        //     studentData.Name + studentData.Surname, // userName
+        //     studentData.Email, // email
+        //     studentData.Password, // password
+        //     results // results object
+        // );
 
         return {
             success: true,
