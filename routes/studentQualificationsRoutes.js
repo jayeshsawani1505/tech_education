@@ -2,20 +2,11 @@ const express = require('express');
 const router = express.Router();
 const studentQualificationsController = require('../controllers/studentQualificationsController');
 const multer = require('multer');
-const path = require('path');
 
-// Configure multer for image uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../uploads/qualifications')); // Ensure 'uploads/qualifications' exists
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname)); // Generate unique filename
-    }
-});
-
+// Configure multer to parse the file into a buffer (similar to the branch admin logic)
+const storage = multer.memoryStorage(); // Use memory storage for temporary file handling
 const upload = multer({ storage });
+
 // Add a new student qualification
 router.post('/', upload.single('attachFile'), studentQualificationsController.addQualification);
 

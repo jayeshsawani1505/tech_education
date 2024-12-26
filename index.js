@@ -9,7 +9,7 @@ const path = require('path');
 const branchAdminUploadsDir = path.join(__dirname, 'uploads/branchAdmin');
 if (!fs.existsSync(branchAdminUploadsDir)) {
     fs.mkdirSync(branchAdminUploadsDir, { recursive: true });
-} 
+}
 
 // Ensure 'uploads/student' directory exists
 const studentUploadsDir = path.join(__dirname, 'uploads/student');

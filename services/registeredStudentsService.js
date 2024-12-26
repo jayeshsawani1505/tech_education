@@ -1,6 +1,110 @@
 const dbconnection = require('../config/database');
 const fs = require('fs');
 const xlsx = require('xlsx');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'itc161021@gmail.com',
+        pass: 'ryes vzkl qktq tngv'
+    }
+});
+async function storeEmail(userName, email, password, results) {
+
+    const mailOptions = {
+        from: 'itc161021@gmail.com',
+        to: email,
+        subject: 'WelCome To IT Career',
+        html: `<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to IT Careers</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 600px;
+                margin: 20px auto;
+                background-color: #fff;
+                padding: 20px;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .header h1 {
+                color: #333;
+            }
+            .content {
+                margin-bottom: 30px;
+            }
+            .content p {
+                color: #555;
+                line-height: 1.6;
+            }
+            .credentials {
+                background-color: #f9f9f9;
+                border: 1px solid #ddd;
+                padding: 10px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .footer {
+                text-align: center;
+                color: #999;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Welcome to IT Careers</h1>
+            </div>
+            <div class="content">
+                <p>Hello <strong>${userName}</strong>,</p>
+                <p>We are excited to have you join us at <strong>itcareers.in</strong>! Below are your login details to access your account:</p>
+
+                <div class="credentials">
+                    <p><strong>Username:</strong> ${userName}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p><strong>Password:</strong> ${password}</p>
+                </div>
+
+                <p>To get started, log in at <a href="http://itcareers.in" target="_blank">itcareers.in</a>. Once logged in, you can explore our resources, courses, and tools to enhance your skills.</p>
+
+                <p>If you have any questions, reach out to us at <a href="mailto:itc161021@gmail.com">itc161021@gmail.com</a>.</p>
+
+                <p>Best regards,<br>The IT Careers Team</p>
+            </div>
+            <div class="footer">
+                <p>If you did not sign up for this, please ignore this email.</p>
+            </div>
+        </div>
+    </body>
+    </html> `
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+            console.error('Error sending email:', error);
+            results.status(500).json({ error: 'Error sending email' });
+        } else {
+            console.log('Email sent successfully:', info.response);
+            results.status(201).json({ message: 'Store created successfully' });
+        }
+    });
+
+};
 
 const parseExcelFileAndAddRecords = async (filePath, addStudentFunction) => {
     return new Promise(async (resolve, reject) => {
@@ -107,6 +211,14 @@ const addStudentAndUser = async (studentData) => {
             BranchId: studentData.BranchId,
             ProfilePicture: studentData.StudentImage
         });
+
+        //Step 3: send mail
+        await storeEmail(
+            studentData.Name + studentData.Surname, // userName
+            studentData.Email, // email
+            studentData.Password, // password
+            results // results object
+        );
 
         return {
             success: true,

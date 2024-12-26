@@ -1,12 +1,36 @@
 const studentQualificationsService = require('../services/studentQualificationService');
+const s3 = require('../config/awsConfig');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid'); // For generating unique file keys
 
 // Add a new student qualification
 const addQualification = async (req, res) => {
     try {
         const qualificationData = req.body;
+
         if (req.file) {
-            qualificationData.attachFile = `/uploads/qualifications/${req.file.filename}`; // Store file path
+            // Extract file details
+            const fileContent = req.file.buffer; // Access file buffer from multer
+            const fileExtension = path.extname(req.file.originalname);
+            const uniqueFileName = `qualifications/${uuidv4()}${fileExtension}`;
+
+            // S3 upload parameters
+            const params = {
+                Bucket: process.env.AWS_S3_BUCKET_NAME, // S3 bucket name
+                Key: uniqueFileName, // File name to save as
+                Body: fileContent,
+                ContentType: req.file.mimetype, // Ensure correct MIME type
+                ACL: 'public-read' // Optional: Make the file public
+            };
+
+            // Upload to S3
+            const uploadResult = await s3.upload(params).promise();
+
+            // Save file URL in qualification data
+            qualificationData.attachFile = uploadResult.Location; // S3 file URL
         }
+
+        // Save qualification data in the database
         const result = await studentQualificationsService.addQualification(qualificationData);
         res.status(201).json({
             success: true,
