@@ -35,7 +35,7 @@ const userLogin = async (loginData) => {
 
         // Generate a token (JWT) with user details including the roleId
         const token = jwt.sign(
-            { user: user},
+            { user: user },
             jwtSecretKey,
             { expiresIn: '1h' }
         );
@@ -44,7 +44,7 @@ const userLogin = async (loginData) => {
             token,
             message: 'Login successful',
             user: {
-                user:user
+                user: user
             },
             authdata: token,
         };
@@ -58,8 +58,24 @@ const userLogin = async (loginData) => {
 // Get user by username
 const getUserByUsername = (username) => {
     return new Promise((resolve, reject) => {
-        dbconnection.query('SELECT * FROM users WHERE username = ?', [username], (err, results) => {
+        const query = `
+            SELECT 
+                users.*,
+                branchadmin.BranchAdminID,
+                branchadmin.BranchID AS BranchAdminBranchID,
+                branch.BranchId AS BranchTableBranchID
+            FROM 
+                users
+            LEFT JOIN 
+                branchadmin ON users.BranchId = branchadmin.BranchAdminID
+            LEFT JOIN 
+                branch ON branchadmin.BranchAdminID = branch.BranchId
+            WHERE 
+                users.UserName = ?`;
+
+        dbconnection.query(query, [username], (err, results) => {
             if (err) {
+                console.error("Database error:", err.message);
                 return reject(err); // Handle query errors
             }
             resolve(results[0] || null); // Return the first user or null if not found
